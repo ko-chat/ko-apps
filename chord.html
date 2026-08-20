@@ -72,6 +72,26 @@
       letter-spacing: 1px;
     }
 
+    .play-button {
+      margin-top: 28px;
+      padding: 14px 24px;
+
+      border: none;
+      border-radius: 16px;
+
+      background: #35bdf2;
+      color: #ffffff;
+
+      font-size: 18px;
+      font-weight: bold;
+
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .play-button:active {
+      transform: scale(0.97);
+    }
+
     .back {
       display: inline-block;
       margin-top: 40px;
@@ -135,6 +155,10 @@
       C ・ E ・ G
     </div>
 
+    <button class="play-button" onclick="playChord()">
+      ▶ コードを鳴らす
+    </button>
+
   </div>
 
   <a class="back" href="music.html">
@@ -143,12 +167,10 @@
 
   <script>
 
-    // 音名の並び
     const letters = [
       "C", "D", "E", "F", "G", "A", "B"
     ];
 
-    // ナチュラル音の半音位置
     const naturalPitch = {
       C: 0,
       D: 2,
@@ -159,7 +181,6 @@
       B: 11
     };
 
-    // トライアドの構成
     const chordTypes = {
       major: [0, 4, 7],
       minor: [0, 3, 7],
@@ -167,7 +188,6 @@
       aug:   [0, 4, 8]
     };
 
-    // ルート音の記号を半音数へ変換
     function accidentalValue(accidental) {
 
       if (accidental === "#") {
@@ -181,7 +201,6 @@
       return 0;
     }
 
-    // 半音差を記号へ変換
     function accidentalSymbol(value) {
 
       if (value === 0) {
@@ -207,7 +226,6 @@
       return "";
     }
 
-    // 指定された度数の音名を作る
     function makeNote(root, letterStep, semitoneInterval) {
 
       const rootLetter = root.charAt(0);
@@ -216,13 +234,11 @@
       const rootLetterIndex =
         letters.indexOf(rootLetter);
 
-      // 3度なら2文字先、5度なら4文字先
       const targetLetter =
         letters[
           (rootLetterIndex + letterStep) % 7
         ];
 
-      // ルート音の実際の半音位置
       let rootPitch =
         naturalPitch[rootLetter]
         + accidentalValue(rootAccidental);
@@ -230,16 +246,12 @@
       rootPitch =
         (rootPitch + 12) % 12;
 
-      // 求めたい音の半音位置
       const targetPitch =
         (rootPitch + semitoneInterval) % 12;
 
-      // 対象となるアルファベットの
-      // ナチュラル音との差を調べる
       let difference =
         targetPitch - naturalPitch[targetLetter];
 
-      // 最も近い臨時記号へ調整
       while (difference > 6) {
         difference -= 12;
       }
@@ -252,7 +264,7 @@
         + accidentalSymbol(difference);
     }
 
-    function showChord() {
+    function getChordData() {
 
       const root =
         document.getElementById("root").value;
@@ -263,27 +275,128 @@
       const intervals =
         chordTypes[type];
 
-      // 1度
       const rootNote =
         makeNote(root, 0, intervals[0]);
 
-      // 3度
       const thirdNote =
         makeNote(root, 2, intervals[1]);
 
-      // 5度
       const fifthNote =
         makeNote(root, 4, intervals[2]);
 
-      document.getElementById("result").textContent =
-        rootNote
-        + " ・ "
-        + thirdNote
-        + " ・ "
-        + fifthNote;
+      return {
+        root: root,
+        intervals: intervals,
+        notes: [
+          rootNote,
+          thirdNote,
+          fifthNote
+        ]
+      };
     }
 
-    // 初期表示
+    function showChord() {
+
+      const chord =
+        getChordData();
+
+      document.getElementById("result").textContent =
+        chord.notes.join(" ・ ");
+    }
+
+    function getRootPitch(root) {
+
+      const rootLetter =
+        root.charAt(0);
+
+      const rootAccidental =
+        root.slice(1);
+
+      let pitch =
+        naturalPitch[rootLetter]
+        + accidentalValue(rootAccidental);
+
+      return (pitch + 12) % 12;
+    }
+
+    function midiToFrequency(midiNumber) {
+
+      return 440 *
+        Math.pow(
+          2,
+          (midiNumber - 69) / 12
+        );
+    }
+
+    function playChord() {
+
+      const chord =
+        getChordData();
+
+      const rootPitch =
+        getRootPitch(chord.root);
+
+      /*
+        C4 = MIDI 60
+
+        ルートをC4〜B4の範囲に置き、
+        3度・5度をその上に積む
+      */
+      const rootMidi =
+        60 + rootPitch;
+
+      const midiNotes =
+        chord.intervals.map(interval => {
+          return rootMidi + interval;
+        });
+
+      const AudioContextClass =
+        window.AudioContext
+        || window.webkitAudioContext;
+
+      const audioContext =
+        new AudioContextClass();
+
+      const now =
+        audioContext.currentTime;
+
+      midiNotes.forEach(midiNote => {
+
+        const oscillator =
+          audioContext.createOscillator();
+
+        const gain =
+          audioContext.createGain();
+
+        oscillator.type =
+          "sine";
+
+        oscillator.frequency.value =
+          midiToFrequency(midiNote);
+
+        gain.gain.setValueAtTime(
+          0.0001,
+          now
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.22,
+          now + 0.03
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          now + 1.3
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start(now);
+        oscillator.stop(now + 1.35);
+      });
+    }
+
     showChord();
 
   </script>
