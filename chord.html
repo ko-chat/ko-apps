@@ -374,78 +374,124 @@
         );
     }
 
+// ピアノ風の1音を作る
+function playPianoTone(audioContext, frequency, startTime) {
 
-    // コードを鳴らす
-    function playChord() {
+  /*
+    ピアノらしい響きを作るため、
+    基本音＋複数の倍音を重ねる
+  */
+  const harmonics = [
+    { ratio: 1, gain: 0.55 },
+    { ratio: 2, gain: 0.20 },
+    { ratio: 3, gain: 0.10 },
+    { ratio: 4, gain: 0.05 }
+  ];
 
-      const chord =
-        getChordData();
+  harmonics.forEach(harmonic => {
 
-      const rootPitch =
-        getRootPitch(chord.root);
+    const oscillator =
+      audioContext.createOscillator();
 
-      const rootMidi =
-        60 + rootPitch;
+    const gain =
+      audioContext.createGain();
 
-      const midiNotes =
-        chord.intervals.map(interval => {
-          return rootMidi + interval;
-        });
+    oscillator.type = "sine";
 
-      const AudioContextClass =
-        window.AudioContext
-        || window.webkitAudioContext;
+    oscillator.frequency.value =
+      frequency * harmonic.ratio;
 
-      const audioContext =
-        new AudioContextClass();
+    /*
+      ピアノのように
 
-      const now =
-        audioContext.currentTime;
+      ポン！
+        ↓
+      すぐ少し小さくなる
+        ↓
+      ゆっくり余韻が消える
+
+      という音量変化を作る
+    */
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      startTime
+    );
+
+    // 鍵盤を叩いた瞬間
+    gain.gain.exponentialRampToValueAtTime(
+      harmonic.gain,
+      startTime + 0.015
+    );
+
+    // すぐ少し減衰
+    gain.gain.exponentialRampToValueAtTime(
+      harmonic.gain * 0.35,
+      startTime + 0.35
+    );
+
+    // 約2.2秒で余韻を消す
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      startTime + 2.2
+    );
+
+    oscillator.connect(gain);
+
+    gain.connect(
+      audioContext.destination
+    );
+
+    oscillator.start(startTime);
+
+    oscillator.stop(
+      startTime + 2.25
+    );
+
+  });
+}
 
 
-      midiNotes.forEach(midiNote => {
+// コードを鳴らす
+function playChord() {
 
-        const oscillator =
-          audioContext.createOscillator();
+  const chord =
+    getChordData();
 
-        const gain =
-          audioContext.createGain();
+  const rootPitch =
+    getRootPitch(chord.root);
 
-        oscillator.type =
-          "sine";
+  const rootMidi =
+    60 + rootPitch;
 
-        oscillator.frequency.value =
-          midiToFrequency(midiNote);
+  const midiNotes =
+    chord.intervals.map(interval => {
+      return rootMidi + interval;
+    });
 
-        gain.gain.setValueAtTime(
-          0.0001,
-          now
-        );
+  const AudioContextClass =
+    window.AudioContext
+    || window.webkitAudioContext;
 
-        gain.gain.exponentialRampToValueAtTime(
-          0.22,
-          now + 0.03
-        );
+  const audioContext =
+    new AudioContextClass();
 
-        // 約2.2秒かけて減衰
-        gain.gain.exponentialRampToValueAtTime(
-          0.0001,
-          now + 2.2
-        );
+  const now =
+    audioContext.currentTime;
 
-        oscillator.connect(gain);
-        gain.connect(
-          audioContext.destination
-        );
+  midiNotes.forEach(midiNote => {
 
-        oscillator.start(now);
+    const frequency =
+      midiToFrequency(midiNote);
 
-        oscillator.stop(
-          now + 2.25
-        );
+    playPianoTone(
+      audioContext,
+      frequency,
+      now
+    );
 
-      });
-    }
+  });
+}
 
 
     // 初期表示
