@@ -1,1 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>音程反射トレーニング - KO Apps</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      text-align: center;
+      color: #111111;
+    }
+
+    h1 {
+      margin-top: 35px;
+      font-size: 28px;
+    }
+
+    .mode-area {
+      width: 88%;
+      max-width: 400px;
+      margin: 30px auto 0;
+
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .mode-button {
+      padding: 15px;
+
+      border: 2px solid #35bdf2;
+      border-radius: 16px;
+
+      background: linear-gradient(
+        145deg,
+        #ffffff 55%,
+        #eefaff 100%
+      );
+
+      color: #111111;
+      font-size: 17px;
+      font-weight: bold;
+
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .mode-button:active {
+      transform: scale(0.97);
+    }
+
+    .training {
+      width: 88%;
+      max-width: 400px;
+
+      margin: 30px auto 0;
+      padding: 28px 20px;
+
+      border: 3px solid #35bdf2;
+      border-radius: 24px;
+
+      background: linear-gradient(
+        145deg,
+        #ffffff 55%,
+        #eefaff 100%
+      );
+
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+      box-sizing: border-box;
+
+      display: none;
+    }
+
+    .mode-title {
+      font-size: 16px;
+      color: #666666;
+      margin-bottom: 24px;
+    }
+
+    .question {
+      min-height: 75px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 24px;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .answer {
+      min-height: 55px;
+
+      margin-top: 25px;
+      padding-top: 22px;
+
+      border-top: 1px solid #cccccc;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 28px;
+      font-weight: bold;
+
+      visibility: hidden;
+    }
+
+    .button-area {
+      margin-top: 25px;
+
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .action-button {
+      padding: 14px 20px;
+
+      border: none;
+      border-radius: 16px;
+
+      background: #35bdf2;
+      color: #ffffff;
+
+      font-size: 17px;
+      font-weight: bold;
+
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.10);
+    }
+
+    .action-button:active {
+      transform: scale(0.97);
+    }
+
+    .back {
+      display: inline-block;
+
+      margin-top: 38px;
+      margin-bottom: 30px;
+
+      color: #666666;
+      font-size: 16px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>音程反射トレーニング</h1>
+
+
+  <!-- モード選択 -->
+  <div class="mode-area">
+
+    <button
+      class="mode-button"
+      onclick="startMode('semitone')">
+      音程 → 半音数
+    </button>
+
+    <button
+      class="mode-button"
+      onclick="startMode('degree')">
+      ルート＋度数 → 音名
+    </button>
+
+  </div>
+
+
+  <!-- 問題表示エリア -->
+  <div class="training" id="training">
+
+    <div
+      class="mode-title"
+      id="modeTitle">
+    </div>
+
+    <div
+      class="question"
+      id="question">
+    </div>
+
+    <div
+      class="answer"
+      id="answer">
+    </div>
+
+    <div class="button-area">
+
+      <button
+        class="action-button"
+        onclick="showAnswer()">
+        答えを見る
+      </button>
+
+      <button
+        class="action-button"
+        onclick="nextQuestion()">
+        次の問題
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <a
+    class="back"
+    href="music.html">
+    ← 音楽へ戻る
+  </a>
+
+
+  <script>
+
+    /*
+      =====================================
+      ① 音程 → 半音数
+      =====================================
+    */
+
+    const semitoneQuestions = [
+
+      {
+        question: "短2度は何半音？",
+        answer: "1半音"
+      },
+
+      {
+        question: "長2度は何半音？",
+        answer: "2半音"
+      },
+
+      {
+        question: "短3度は何半音？",
+        answer: "3半音"
+      },
+
+      {
+        question: "長3度は何半音？",
+        answer: "4半音"
+      },
+
+      {
+        question: "完全4度は何半音？",
+        answer: "5半音"
+      },
+
+      {
+        question: "増4度は何半音？",
+        answer: "6半音"
+      },
+
+      {
+        question: "減5度は何半音？",
+        answer: "6半音"
+      },
+
+      {
+        question: "完全5度は何半音？",
+        answer: "7半音"
+      },
+
+      {
+        question: "短6度は何半音？",
+        answer: "8半音"
+      },
+
+      {
+        question: "長6度は何半音？",
+        answer: "9半音"
+      },
+
+      {
+        question: "短7度は何半音？",
+        answer: "10半音"
+      },
+
+      {
+        question: "長7度は何半音？",
+        answer: "11半音"
+      },
+
+      {
+        question: "完全8度は何半音？",
+        answer: "12半音"
+      }
+
+    ];
+
+
+    /*
+      =====================================
+      ② ルート＋度数 → 音名
+
+      今回はまずナチュラル音のみ。
+      C D E F G A B を使う。
+      =====================================
+    */
+
+    const noteNames = [
+      "C", "D", "E", "F", "G", "A", "B"
+    ];
+
+    const degreeQuestions = [];
+
+
+    /*
+      各ルートから
+      2度～7度までの問題を自動生成
+    */
+
+    noteNames.forEach((root, rootIndex) => {
+
+      for (let degree = 2; degree <= 7; degree++) {
+
+        const targetIndex =
+          (rootIndex + degree - 1) % 7;
+
+        const targetNote =
+          noteNames[targetIndex];
+
+        degreeQuestions.push({
+
+          question:
+            root
+            + "から"
+            + degree
+            + "度の音は？",
+
+          answer:
+            targetNote
+
+        });
+
+      }
+
+    });
+
+
+    /*
+      =====================================
+      トレーニング制御
+      =====================================
+    */
+
+    let currentMode = "";
+
+    let currentQuestions = [];
+
+    let currentQuestionIndex = -1;
+
+    let previousQuestionIndex = -1;
+
+
+    /*
+      モード開始
+    */
+
+    function startMode(mode) {
+
+      currentMode = mode;
+
+      previousQuestionIndex = -1;
+
+
+      if (mode === "semitone") {
+
+        currentQuestions =
+          semitoneQuestions;
+
+        document.getElementById(
+          "modeTitle"
+        ).textContent =
+          "音程 → 半音数";
+
+      }
+
+
+      if (mode === "degree") {
+
+        currentQuestions =
+          degreeQuestions;
+
+        document.getElementById(
+          "modeTitle"
+        ).textContent =
+          "ルート＋度数 → 音名";
+
+      }
+
+
+      document.getElementById(
+        "training"
+      ).style.display =
+        "block";
+
+
+      nextQuestion();
+    }
+
+
+    /*
+      ランダムな問題番号を作る
+    */
+
+    function getRandomQuestionIndex() {
+
+      let newIndex;
+
+
+      /*
+        直前と同じ問題だった場合は
+        もう一度抽選する
+      */
+
+      do {
+
+        newIndex =
+          Math.floor(
+            Math.random()
+            * currentQuestions.length
+          );
+
+      }
+      while (
+        currentQuestions.length > 1
+        &&
+        newIndex === previousQuestionIndex
+      );
+
+
+      return newIndex;
+    }
+
+
+    /*
+      次の問題
+    */
+
+    function nextQuestion() {
+
+      previousQuestionIndex =
+        currentQuestionIndex;
+
+
+      currentQuestionIndex =
+        getRandomQuestionIndex();
+
+
+      const question =
+        currentQuestions[
+          currentQuestionIndex
+        ];
+
+
+      document.getElementById(
+        "question"
+      ).textContent =
+        question.question;
+
+
+      document.getElementById(
+        "answer"
+      ).textContent =
+        question.answer;
+
+
+      /*
+        次の問題では
+        答えを再び隠す
+      */
+
+      document.getElementById(
+        "answer"
+      ).style.visibility =
+        "hidden";
+    }
+
+
+    /*
+      答えを見る
+    */
+
+    function showAnswer() {
+
+      document.getElementById(
+        "answer"
+      ).style.visibility =
+        "visible";
+    }
+
+  </script>
+
+</body>
+</html>
