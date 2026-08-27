@@ -1,1 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>サイコロ - KO Apps</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      text-align: center;
+      color: #111111;
+    }
+
+    h1 {
+      margin-top: 50px;
+      font-size: 32px;
+    }
+
+    .dice-area {
+      width: 84%;
+      max-width: 360px;
+      margin: 40px auto 0;
+      padding: 30px 20px;
+
+      border: 3px solid #35bdf2;
+      border-radius: 24px;
+
+      background: linear-gradient(
+        145deg,
+        #ffffff 55%,
+        #eefaff 100%
+      );
+
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      box-sizing: border-box;
+    }
+
+    .result {
+      font-size: 80px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .roll-button {
+      padding: 14px 28px;
+
+      border: none;
+      border-radius: 16px;
+
+      background: #35bdf2;
+      color: #ffffff;
+
+      font-size: 20px;
+      font-weight: bold;
+
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.10);
+    }
+
+    .roll-button:active {
+      transform: scale(0.97);
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 40px;
+      margin-bottom: 30px;
+
+      color: #666666;
+      font-size: 16px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🎲 サイコロ</h1>
+
+  <div class="dice-area">
+
+    <div class="result" id="result">
+      -
+    </div>
+
+    <button
+      class="roll-button"
+      onclick="rollDice()">
+      振る
+    </button>
+
+  </div>
+
+  <a class="back" href="index.html">
+    ← KO Appsへ戻る
+  </a>
+
+  <script>
+
+    function rollDice() {
+
+      const dice =
+        Math.floor(
+          Math.random() * 6
+        ) + 1;
+
+      document.getElementById(
+        "result"
+      ).textContent =
+        dice;
+    }
+
+  </script>
+
+</body>
+</html>
